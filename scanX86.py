@@ -28,10 +28,10 @@ class IoTAnalyzer:
             'by_type': {},
             'start_time': datetime.now().isoformat()
         }
-        
+
         # Setup output directories
         self.setup_directories()
-        
+
         # Device vendors and their patterns (x86 focused)
         self.vendors = {
             'TP-Link': ['tp-link', 'tplinkwifi', 'archer', 'tl-wr', 'tl-wa', 'tl-', 'tp_link'],
@@ -121,9 +121,37 @@ class IoTAnalyzer:
             'Lighttpd': ['lighttpd'],
             'Cherokee': ['cherokee'],
             'Caddy': ['caddy'],
-            'Traefik': ['traefik']
+            'Traefik': ['traefik'],
+            'Baicell': ['baicell', 'baicell technologies', 'baicell fiber', 'baicell lte'],
+            'Cambium Networks': ['cambium', 'cambium networks', 'cnpilot', 'epmp', 'pmp'],
+            'Mimosa Networks': ['mimosa', 'mimosa networks', 'mimosa b5', 'mimosa a5'],
+            'Siklu': ['siklu', 'siklu communication'],
+            'Radwin': ['radwin', 'radwin ltd'],
+            'Ceragon': ['ceragon', 'ceragon networks'],
+            'DragonWave': ['dragonwave', 'dragonwave-x'],
+            'Exalt': ['exalt', 'exalt communications'],
+            'Aviat Networks': ['aviat', 'aviat networks', 'eclipse'],
+            'SAF Tehnika': ['saf', 'saf tehnika', 'integra'],
+            'Intracom Telecom': ['intracom', 'intracom telecom'],
+            'SIAE Microelettronica': ['siae', 'siae microelettronica'],
+            'NEC': ['nec', 'nec corporation', 'pasolink'],
+            'Ericsson': ['ericsson', 'ericsson ab', 'mini-link'],
+            'Nokia': ['nokia', 'nokia networks', 'wavence'],
+            'Alcatel-Lucent': ['alcatel-lucent', 'nokia alcatel'],
+            'Proxim Wireless': ['proxim', 'proxim wireless', 'tsunami'],
+            'LigoWave': ['ligowave', 'ligo wave'],
+            'InfiNet Wireless': ['infinet', 'infinet wireless'],
+            'UBNT': ['ubnt', 'ubiquiti networks'],
+            'MikroTik': ['mikrotik', 'routeros', 'routerboard'],
+            'Deliberant': ['deliberant'],
+            'Motorola Solutions': ['motorola solutions', 'canopy', 'ptp'],
+            'Redline Communications': ['redline', 'redline communications'],
+            'Telrad': ['telrad', 'telrad networks'],
+            'Sub10 Systems': ['sub10', 'sub10 systems'],
+            'E-Band Communications': ['e-band', 'eband'],
+            'Fastback Networks': ['fastback', 'fastback networks']
         }
-        
+
         # Device types (x86 focused)
         self.device_types = {
             'Router': ['router', 'gateway', 'wireless', 'wifi', 'access point', 'ap', 'wlan', 'bridge', 'repeater', 'extender'],
@@ -156,9 +184,14 @@ class IoTAnalyzer:
             'Version Control': ['version control', 'git', 'svn', 'mercurial', 'gitlab', 'github'],
             'CI/CD': ['continuous integration', 'jenkins', 'bamboo', 'teamcity', 'gitlab ci'],
             'Container': ['container', 'docker', 'kubernetes', 'k8s', 'openshift'],
-            'Cloud': ['cloud', 'aws', 'azure', 'gcp', 'openstack', 'cloudstack']
+            'Cloud': ['cloud', 'aws', 'azure', 'gcp', 'openstack', 'cloudstack'],
+            'Fiber Equipment': ['fiber', 'fiber optic', 'optical', 'sfp', 'gpon', 'epon', 'xpon', 'ont', 'onu'],
+            'Microwave Radio': ['microwave', 'radio', 'point to point', 'ptp', 'ptmp', 'wireless backhaul', 'mmwave'],
+            'Base Station': ['base station', 'bts', 'enodeb', 'small cell', 'femtocell', 'macrocell', 'lte', '5g', '4g'],
+            'Telecom Equipment': ['telecom', 'telecommunications', 'carrier', 'operator', 'transport', 'aggregation'],
+            'Antenna System': ['antenna', 'antenna system', 'remote radio', 'rru', 'remote radio unit', 'massive mimo']
         }
-        
+
         # x86 architecture indicators
         self.x86_indicators = [
             'x86', 'x64', 'x86_64', 'i386', 'i486', 'i586', 'i686',
@@ -167,7 +200,7 @@ class IoTAnalyzer:
             'windows', 'linux', 'ubuntu', 'debian', 'centos', 'rhel',
             'pc', 'desktop', 'workstation', 'server'
         ]
-        
+
         # Non-x86 architecture indicators to filter out
         self.non_x86_indicators = [
             'arm', 'mips', 'powerpc', 'sparc', 'risc-v',
@@ -183,7 +216,7 @@ class IoTAnalyzer:
             shutil.rmtree('by_vendor')
         if os.path.exists('by_type'):
             shutil.rmtree('by_type')
-        
+
         # Create new directories
         os.makedirs('by_vendor', exist_ok=True)
         os.makedirs('by_type', exist_ok=True)
@@ -199,7 +232,7 @@ class IoTAnalyzer:
                 allow_redirects=True,
                 headers={'User-Agent': 'Mozilla/5.0 (compatible; IoT Scanner)'}
             )
-            
+
             return {
                 'url': url,
                 'status': response.status_code,
@@ -218,7 +251,7 @@ class IoTAnalyzer:
                     allow_redirects=True,
                     headers={'User-Agent': 'Mozilla/5.0 (compatible; IoT Scanner)'}
                 )
-                
+
                 return {
                     'url': url,
                     'status': response.status_code,
@@ -240,7 +273,7 @@ class IoTAnalyzer:
     def identify_vendor(self, info):
         """Identify device vendor"""
         search_text = f"{info.get('title', '')} {info.get('server', '')} {info.get('content', '')}".lower()
-        
+
         for vendor, patterns in self.vendors.items():
             for pattern in patterns:
                 if pattern.lower() in search_text:
@@ -250,7 +283,7 @@ class IoTAnalyzer:
     def identify_device_type(self, info):
         """Identify device type"""
         search_text = f"{info.get('title', '')} {info.get('content', '')}".lower()
-        
+
         for device_type, patterns in self.device_types.items():
             for pattern in patterns:
                 if pattern.lower() in search_text:
@@ -260,17 +293,17 @@ class IoTAnalyzer:
     def is_x86_device(self, info):
         """Check if device is x86 architecture"""
         search_text = f"{info.get('title', '')} {info.get('server', '')} {info.get('content', '')}".lower()
-        
+
         # Check for non-x86 indicators first (filter out)
         for indicator in self.non_x86_indicators:
             if indicator.lower() in search_text:
                 return False
-        
+
         # Check for x86 indicators
         for indicator in self.x86_indicators:
             if indicator.lower() in search_text:
                 return True
-        
+
         # If no clear architecture indicators, assume it could be x86
         # (many devices don't explicitly mention architecture)
         return True
@@ -280,22 +313,22 @@ class IoTAnalyzer:
         ip = ip_line.strip()
         if not ip:
             return
-        
+
         self.stats['total_scanned'] += 1
-        
+
         # Get web interface info
         web_info = self.get_web_info(ip)
         if not web_info:
             return
-        
+
         # Filter for x86 architecture only
         if not self.is_x86_device(web_info):
             return
-        
+
         # Identify device
         vendor = self.identify_vendor(web_info)
         device_type = self.identify_device_type(web_info)
-        
+
         device = {
             'ip': ip,
             'vendor': vendor,
@@ -306,18 +339,18 @@ class IoTAnalyzer:
             'status': web_info.get('status', 0),
             'timestamp': datetime.now().isoformat()
         }
-        
+
         # Update statistics
         self.stats['devices_found'] += 1
         self.stats['by_vendor'][vendor] = self.stats['by_vendor'].get(vendor, 0) + 1
         self.stats['by_type'][device_type] = self.stats['by_type'].get(device_type, 0) + 1
-        
+
         # Save IP to files immediately
         self.save_ip_to_files(ip, vendor, device_type)
-        
+
         # Save device info
         self.save_device(device)
-        
+
         # Print result
         print(f"[+] {ip} - {device_type} ({vendor}) - {web_info.get('title', 'No title')}")
 
@@ -330,15 +363,15 @@ class IoTAnalyzer:
                     data = json.load(f)
             except:
                 data = {'devices': [], 'statistics': {}}
-            
+
             # Add new device
             data['devices'].append(device)
             data['statistics'] = self.stats
-            
+
             # Write back
             with open(self.results_file, 'w') as f:
                 json.dump(data, f, indent=2)
-                
+
         except Exception as e:
             pass
 
@@ -348,7 +381,7 @@ class IoTAnalyzer:
         try:
             clean_vendor = re.sub(r'[^\w\-_]', '_', vendor)
             vendor_file = f"by_vendor/{clean_vendor}.txt"
-            
+
             # Check if IP already exists in file to avoid duplicates
             existing_ips = set()
             if os.path.exists(vendor_file):
@@ -357,18 +390,18 @@ class IoTAnalyzer:
                         existing_ips = set(line.strip() for line in f if line.strip())
                 except:
                     pass
-            
+
             if ip not in existing_ips:
                 with open(vendor_file, 'a') as f:
                     f.write(f"{ip}\n")
         except:
             pass
-        
+
         # Save to type file
         try:
             clean_type = re.sub(r'[^\w\-_]', '_', device_type)
             type_file = f"by_type/{clean_type}.txt"
-            
+
             # Check if IP already exists in file to avoid duplicates
             existing_ips = set()
             if os.path.exists(type_file):
@@ -377,7 +410,7 @@ class IoTAnalyzer:
                         existing_ips = set(line.strip() for line in f if line.strip())
                 except:
                     pass
-            
+
             if ip not in existing_ips:
                 with open(type_file, 'a') as f:
                     f.write(f"{ip}\n")
@@ -390,17 +423,17 @@ class IoTAnalyzer:
         print(f"[*] Total scanned: {self.stats['total_scanned']}")
         print(f"[*] Devices found: {self.stats['devices_found']}")
         print(f"[*] Results saved to: {self.results_file}")
-        
+
         if self.stats['by_vendor']:
             print(f"\n[*] Top vendors:")
             for vendor, count in sorted(self.stats['by_vendor'].items(), key=lambda x: x[1], reverse=True)[:5]:
                 print(f"    {vendor}: {count}")
-        
+
         if self.stats['by_type']:
             print(f"\n[*] Device types:")
             for dev_type, count in sorted(self.stats['by_type'].items(), key=lambda x: x[1], reverse=True):
                 print(f"    {dev_type}: {count}")
-        
+
         print(f"\n[*] IP files continuously saved to by_vendor/ and by_type/ directories")
 
 def main():
@@ -409,9 +442,9 @@ def main():
     print("[*] Reading IPs from stdin (use with zmap)...")
     print("[*] Example: zmap -p 80 -B 10M | python3 new.py")
     print()
-    
+
     analyzer = IoTAnalyzer()
-    
+
     with ThreadPoolExecutor(max_workers=300) as executor:
         try:
             for line in sys.stdin:
@@ -420,7 +453,7 @@ def main():
                     executor.submit(analyzer.analyze_ip, line)
         except KeyboardInterrupt:
             print("\n[*] Scan interrupted by user")
-    
+
     analyzer.print_stats()
 
 if __name__ == "__main__":
